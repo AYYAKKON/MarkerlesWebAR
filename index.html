@@ -1,119 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Stable A-Frame -->
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
 
-  <!-- A-Frame -->
-  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-
-  <!-- aframe-ar (local build) -->
-  <script src="./aframe-ar-main/dist/aframe-ar.min.js"></script>
-
-  <title>MarkLess</title>
+    <!-- Local aframe-ar -->
+    <script src="./aframe-ar-main/dist/aframe-ar.min.js"></script>
+    <title>MarkLess</title>
 </head>
 <body>
+    <script>
+      function showMessage(message){
+        let hud = document.querySelector("#hud");
+        hud.setAttribute('value', message);
+      }
 
-<script>
-function showMessage(message){
-  const hud = document.querySelector("#hud");
-  if (hud) hud.setAttribute('value', message);
-}
+        AFRAME.registerComponent('ar-logic',{
+            init: function(){
+                showMessage('ar-logic running');
+            },
+            tick : function(){
+              let cam = document.querySelector("#cam");
+              if(!cam){return;}
+              showMessage('cam detected');
+              let collision = cam.components.raycaster.getIntersection(this.el);
+              if(!collision){return;}
+              showMessage('Occured collision' + collision.point.x.toFixed(2) + " " + collision.point.z.toFixed(2));
+              let circle = document.querySelector("#circle");
+              circle.setAttribute('position', collision.point);
+            }
+        });
 
-AFRAME.registerComponent('ar-logic',{
-  init: function(){
-    showMessage('AR Ready');
-  },
+        window.addEventListener('touchstart', function(){
+          let box = document.querySelector("#box");
+          let circle = document.querySelector("#circle");
+          let pos = circle.getAttribute('position');
 
-  tick: function(){
-    const cam = document.querySelector("#cam");
-    if(!cam || !cam.components.raycaster) return;
+          box.setAttribute('position', pos);
+        });
 
-    const intersection = cam.components.raycaster
-      .getIntersection(document.querySelector("#ground"));
-
-    if(!intersection) return;
-
-    const point = intersection.point;
-
-    const circle = document.querySelector("#circle");
-    circle.setAttribute('position', {
-      x: point.x,
-      y: point.y,
-      z: point.z
-    });
-
-    showMessage(
-      `Hit: ${point.x.toFixed(2)} ${point.z.toFixed(2)}`
-    );
-  }
-});
-
-window.addEventListener('touchstart', function(){
-  const circle = document.querySelector("#circle");
-  const box = document.querySelector("#box");
-
-  if(!circle || !box) return;
-
-  const pos = circle.getAttribute('position');
-
-  box.setAttribute('position', pos);
-});
-</script>
+    </script>
 
 
-<a-scene 
-  ar 
-  ar-logic
-  renderer="logarithmicDepthBuffer: true;"
->
-
-  <!-- Camera -->
-  <a-camera 
-    id="cam"
-    ar-raycaster
-    raycaster="objects: #ground"
-  >
-    <a-text 
-      id="hud" 
-      value="Initializing..."
-      position="0 -0.1 -0.3"
-      align="center"
-      width="1"
-    ></a-text>
-  </a-camera>
-
-
-  <!-- Invisible Ground Plane -->
-  <a-plane
-    id="ground"
-    rotation="-90 0 0"
-    width="100"
-    height="100"
-    visible="false"
-  ></a-plane>
-
-
-  <!-- Reticle -->
-  <a-ring
-    id="circle"
-    rotation="-90 0 0"
-    radius-inner="0.03"
-    radius-outer="0.05"
-    color="lime"
-  ></a-ring>
-
-
-  <!-- GLB Model -->
-  <a-gltf-model 
-    id="box"
-    src="model/charizard.glb"
-    scale="0.2 0.2 0.2"
-    rotation="0 180 0"
-    position="0 -100 0"
-  ></a-gltf-model>
-
-</a-scene>
-
+    <a-scene ar ar-logic>
+        <a-camera id="cam" ar-raycaster raycaster="objects:none;">
+          <a-text id="hud" 
+            value="Summa Text" 
+            position="0 -0.1 -0.25"
+            align="center"
+            wrap-count="800"
+          ></a-text>
+        </a-camera>
+    
+        <a-ring
+          id="circle"
+          rotation="-90 0 0"
+          radius-inner="0.01"
+          radius-outer="0.02">
+        </a-ring>
+    
+        <!-- <a-box id="box" position="0 0 -1" color="red" scale="0.2 0.2 0.2"></a-box> -->
+        <a-gltf-model id="box"
+          src="model/arCar.glb"
+          scale="5 5 5"
+          position="0 0 0"
+        ></a-gltf-model>
+    
+    </a-scene>
 </body>
+
 </html>
